@@ -58,10 +58,12 @@ char getChar(const char* prompt, const char* validChar, istream& is)
 	do
 	{
 		is.get(chr);
-		is.ignore(1000, '\n');
 		cout << endl;
-
-		if (!strchr(validChar,chr))
+		if (is.get() != '\n')
+		{
+			is.ignore(1000, '\n');
+		}
+		else if (!strchr(validChar, chr))
 		{
 			cout << "ERROR: Select from the options [" << validChar << "]: ";
 		}
