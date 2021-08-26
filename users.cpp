@@ -1,6 +1,10 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <cstring>
 #include <iostream>
+#include <iomanip>
+#include <stdio.h>      
+#include <stdlib.h>     
+#include <time.h>       
 
 #include "users.h"
 #include "helperFunctions.h"
@@ -115,7 +119,7 @@ void Game::registerUser(Connection* conn)
 	char* pass;
 	char val;
 	int flag = 0;
-	
+
 	do
 	{
 		username = getString("Username", 1, 30, cin);
@@ -128,7 +132,7 @@ void Game::registerUser(Connection* conn)
 
 	pass = getString("Password", 4, 10, cin);
 
-	val = getStr("Are you sure you want to register? (Y/N): ", cin);
+	val = getChar("Are you sure you want to register? (Y/N): ", "YN", cin);
 	if (val == 'Y')
 	{
 		Statement* stmt = conn->createStatement();
@@ -193,6 +197,7 @@ void Game::login()
 		getline(cin, name, '\n');
 		cout << "Password: ";
 		getline(cin, pass, '\n');
+		cout << endl;
 		index = matchingNames(name.c_str());
 
 		if (index == matchingPasswords(pass.c_str()))
@@ -205,7 +210,7 @@ void Game::login()
 		else
 		{
 			cerr << "ERROR: Username and passwords is incorrect." << endl;
-			valid = getStr("Do you wish to try again ? (Y/N): ", cin);
+			valid = getChar("Do you wish to try again ? (Y/N): ", "YN", cin);
 			cout << endl;
 			if (valid == 'N')
 			{
@@ -216,12 +221,33 @@ void Game::login()
 	} while (!flag);
 }
 
+void Game::scoreboard(Connection* conn)
+{
+	Statement* stmt = conn->createStatement();
+	ResultSet* rs = stmt->executeQuery("SELECT username, win, draw FROM tictactoe ORDER BY win, username FETCH NEXT 10 ROWS ONLY");
+	
+	cout.setf(ios::left);
+	cout << setw(6) << "Rank" << setw(15) << "Username" << setw(6) << "Wins" << setw(7) << "Draws" << endl;
+	cout.unsetf(ios::left);
+	cout.setf(ios::right);
+	cout << setw(6) << setfill('=') << "= " << setw(15) << setfill('=') << "= " << setw(6) << setfill('=') << "= " << setw(7) << setfill('=') << "= " << endl;
+	cout.unsetf(ios::right);
+
+	cout.setf(ios::left);
+	for (int i = 0; rs->next(); i++)
+	{
+		cout << setfill(' ') << setw(6) << i + 1 << setw(15) << rs->getString(1) << setw(6) << rs->getInt(2) << setw(7) << rs->getInt(3) << endl;
+	}
+	cout << endl;
+}
+
 void Game::tttMenu(int index)
 {
 	int selection;
+	char userChar = '\0';
 	do
 	{
-		cout << "User Menu" << endl;
+		cout << "Welcome " << users[index].name() << "!" << endl;
 		cout << "================" << endl;
 		cout << "1) Play" << endl;
 		cout << "2) Stats" << endl;
@@ -233,12 +259,13 @@ void Game::tttMenu(int index)
 		{
 		case 1:
 		{
-			display();
+			userChar = getChar("Select a character (X/O): ", "XO", cin);
+			//wholeGame(userChar);
 		}
 		break;
 		case 2:
 		{
-			
+
 		}
 		break;
 		break;
@@ -248,7 +275,3 @@ void Game::tttMenu(int index)
 	} while (selection);
 }
 
-void Game::display()
-{
-
-}

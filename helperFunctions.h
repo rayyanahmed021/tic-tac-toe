@@ -4,7 +4,7 @@
 #define MAX_PASS 10;
 
 int getInt(const char* prompt, int min, int max, const char* errorMsg);
-char getStr(const char* prompt, std::istream& = std::cin);
+char getChar(const char* prompt, const char* validChar, std::istream& = std::cin);
 //char* getUsername(const char* prompt, std::istream & = std::cin);
 //char* getPass(const char* prompt, std::istream & = std::cin);
 

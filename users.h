@@ -29,7 +29,7 @@ class Game
 {
 	Users* users;
 	int totalUser = 0;
-	int tictactoe[9]{ 0 };
+	int tictactoe[9] = {0}; // 1 for user and 2 for computer and 0 for none
 public:
 	Game(Connection* conn);
 	~Game();
@@ -38,7 +38,7 @@ public:
 	int matchingNames(const char* name);
 	int matchingPasswords(const char* password);
 	void login();
+	void scoreboard(Connection* conn);
 	void tttMenu(int index);
-	void display();
 	Game& operator = (const Game* src);
 };

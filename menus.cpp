@@ -29,9 +29,10 @@ void startMenu(Connection* conn, Game& game)
 		cout << "================" << endl;
 		cout << "1) Register" << endl;
 		cout << "2) Login" << endl;
-		cout << "3) Stats" << endl;
+		cout << "3) Scoreboard" << endl;
 		cout << "0) Exit" << endl;
 		selection = getInt("Enter Menu option: ", 0, 3, "Enter within the range of menu options");
+		cout << endl;
 
 		switch (selection)
 		{
@@ -44,7 +45,11 @@ void startMenu(Connection* conn, Game& game)
 		{
 			game.login();
 		}
-			break;
+		break;
+		case 3:
+		{
+			game.scoreboard(conn);
+		}
 		break;
 		default:
 			break;

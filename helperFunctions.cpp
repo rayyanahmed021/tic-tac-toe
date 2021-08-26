@@ -45,10 +45,11 @@ int getInt(const char* prompt, int min, int max, const char* errorMsg)
 
 	return inputPrompt;
 }
-char getStr(const char* prompt, istream& is)
+char getChar(const char* prompt, const char* validChar, istream& is)
 {
 	string str;
 	char chr;
+	int flag = 0;
 
 	if (prompt)
 	{
@@ -58,13 +59,18 @@ char getStr(const char* prompt, istream& is)
 	{
 		is.get(chr);
 		is.ignore(1000, '\n');
+		cout << endl;
 
-		if (chr != 'Y' && chr != 'N')
+		if (!strchr(validChar,chr))
 		{
-			cout << "ERROR: Select 'Y' OR 'N': ";
+			cout << "ERROR: Select from the options [" << validChar << "]: ";
+		}
+		else
+		{
+			flag = 1;
 		}
 
-	} while (chr != 'Y' && chr != 'N');
+	} while (!flag);
 
 	return chr;
 }
