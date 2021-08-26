@@ -52,6 +52,22 @@ char* Users::password() const
 	return pass;
 }
 
+void Users::updateScore(char winloss)
+{
+	if (winloss == 'w')
+	{
+		win++;
+	}
+	else if (winloss == 'l')
+	{
+		loss++;
+	}
+	else
+	{
+		draws++;
+	}
+}
+
 
 void Users::setPassword(const char* password)
 {
@@ -211,7 +227,6 @@ void Game::login()
 		{
 			cerr << "ERROR: Username and passwords is incorrect." << endl;
 			valid = getChar("Do you wish to try again ? (Y/N): ", "YN", cin);
-			cout << endl;
 			if (valid == 'N')
 			{
 				flag = 1;
@@ -260,7 +275,7 @@ void Game::tttMenu(int index)
 		case 1:
 		{
 			userChar = getChar("Select a character (X/O): ", "XO", cin);
-			//wholeGame(userChar);
+			wholeGame(userChar);
 		}
 		break;
 		case 2:
@@ -275,3 +290,186 @@ void Game::tttMenu(int index)
 	} while (selection);
 }
 
+void Game::display(char userChar)
+{
+	userChar == 'X' ? cout << "User: X" : cout << "User: O";
+	cout << '\t\t';
+	userChar == 'X' ? cout << "Computer: O" : cout << "Computer: X" << endl << endl;
+	for (int i = 1, j = 0; i <= 3; i++, j += 3)
+	{
+		//cout << "_" << j << "_|_" << j + 1 << "_|_" << j + 2 << "_|" << endl;
+
+		cout << "|_";
+		if (tictactoe[j] == 1)
+		{
+			cout << userChar;
+		}
+		else if (tictactoe[j] == 2)
+		{
+			userChar == 'X' ? cout << 'O' : cout << 'X';
+		}
+		else
+		{
+			cout << j + 1;
+		}
+		cout << "_|_";
+		
+
+		if (tictactoe[j + 1] == 1)
+		{
+			cout << userChar;
+		}
+		else if (tictactoe[j + 1] == 2)
+		{
+			userChar == 'X' ? cout << 'O' : cout << 'X';
+		}
+		else
+		{
+			cout << j + 2;
+		}
+		cout << "_|_";
+
+		if (tictactoe[j + 2] == 1)
+		{
+			cout << userChar;
+		}
+		else if (tictactoe[j + 2] == 2)
+		{
+			userChar == 'X' ? cout << 'O' : cout << 'X';
+		}
+		else
+		{
+			cout << j + 3;
+		}
+		cout << "_|" << endl;
+		
+	}
+	cout << endl << endl;
+}
+
+void Game::wholeGame(char userChar)
+{
+	int turns = 0, win;
+	do
+	{
+		display(userChar);
+
+		if (turns % 2 == 0)
+		{
+			//take user input
+			turn(1);
+		}
+		else
+		{
+			//call computer turn
+			turn(2);
+		}
+		turns++;
+		win = winner();
+
+	} while (!win && turns <= 9);
+
+	display(userChar);
+	cout << "WINNER: ";
+	//win == 1 ? cout << "You\t" : cout << "Computer\t";
+	if (win)
+	{
+		if (win == 1)
+		{
+			cout << "You\t";
+		}
+		else if (win == 2)
+		{
+			cout << "Computer\t";
+		}
+		cout << "LOSER: ";
+		//win == 1 ? cout << "Computer" : cout << "You";
+		if (win == 1)
+		{
+			cout << "Computer";
+		}
+		else if (win == 2)
+		{
+			cout << "You";
+		}
+	}
+	else
+	{
+		cout << "This game is a draw" << endl;
+	}
+	cout << endl;
+	//updatescore
+}
+
+int Game::turn(int playerNumber)
+{
+	int userTurn = 0, flag = 0;
+	do
+	{
+		if (playerNumber == 1)
+		{
+			userTurn = getInt("Select a number: ", 1, 9, "Choose between 1 and 9");
+
+			if (tictactoe[userTurn - 1] == 0)
+			{
+				tictactoe[userTurn - 1] = 1;
+				flag = 1;
+			}
+			else
+			{
+				cerr << "ERROR: Select empty boxes. Try again." << endl;
+			}
+		}
+		else
+		{
+			srand(time(NULL));
+			userTurn = rand() % 9 + 1;
+
+			if (tictactoe[userTurn - 1] == 0)
+			{
+				tictactoe[userTurn - 1] = 2;
+				flag = 1;
+			}
+		}
+	} while (!flag);
+	return 0;
+}
+
+int Game::winner()
+{
+	int winner = 0;
+
+	if (tictactoe[0] == tictactoe[1] && tictactoe[2] == tictactoe[1])
+	{
+		winner = tictactoe[0];
+	}
+	else if (tictactoe[2] == tictactoe[5] && tictactoe[8] == tictactoe[5])
+	{
+		winner = tictactoe[2];
+	}
+	else if (tictactoe[6] == tictactoe[7] && tictactoe[8] == tictactoe[7])
+	{
+		winner = tictactoe[6];
+	}
+	else if (tictactoe[0] == tictactoe[3] && tictactoe[6] == tictactoe[3])
+	{
+		winner = tictactoe[0];
+	}
+	else if (tictactoe[1] == tictactoe[4] && tictactoe[7] == tictactoe[4])
+	{
+		winner = tictactoe[1];
+	}
+	else if (tictactoe[3] == tictactoe[4] && tictactoe[5] == tictactoe[4])
+	{
+		winner = tictactoe[3];
+	}
+	else if (tictactoe[0] == tictactoe[4] && tictactoe[8] == tictactoe[4])
+	{
+		winner = tictactoe[0];
+	}
+	else if (tictactoe[2] == tictactoe[4] && tictactoe[6] == tictactoe[4])
+	{
+		winner = tictactoe[6];
+	}
+	return winner;
+}

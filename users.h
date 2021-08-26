@@ -19,7 +19,7 @@ public:
 	void setName(const char* name);
 	char* name()const;
 	char* password()const;
-	
+	void updateScore(char winloss);
 
 	Users& operator = (const Users*);
 	Users(const Users&) = delete;
@@ -40,5 +40,9 @@ public:
 	void login();
 	void scoreboard(Connection* conn);
 	void tttMenu(int index);
+	void display(char userChar);
+	void wholeGame(char userChar);
+	int turn(int playerNumber);
+	int winner();
 	Game& operator = (const Game* src);
 };
