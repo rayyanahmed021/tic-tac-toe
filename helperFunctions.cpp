@@ -171,7 +171,7 @@ char getChar(const char* prompt, const char* validChar, istream& is)
 char* getString(const char* prompt, int min, int max, std::istream& is)
 {
 	string str;
-	int flag = 0, i;
+	int flag = 0;
 	char* ptr = nullptr;
 
 	if (prompt)
@@ -188,7 +188,7 @@ char* getString(const char* prompt, int min, int max, std::istream& is)
 		}
 		else
 		{
-			strcmp(prompt, "Username") == 0 ? flag = asciiValidation(1, str) : flag = asciiValidation(2, str);
+			strcmp(prompt, "Username") == 0 ? flag = asciiValidation(1, str.c_str()) : flag = asciiValidation(2, str.c_str());
 		}
 	} while (!flag);
 
@@ -197,13 +197,13 @@ char* getString(const char* prompt, int min, int max, std::istream& is)
 	return ptr;
 }
 
-int asciiValidation(int num, string& str)
+int asciiValidation(int num, const char* str)
 {
 
 	int i, flag = 1, number, lower, upper, special;
 	number = lower = special = upper = 0;
 
-	for (i = 0; flag && i < str.length(); i++)
+	for (i = 0; flag && i < strlen(str); i++)
 	{
 		//1 for username
 		if (num == 1)
@@ -240,7 +240,7 @@ int asciiValidation(int num, string& str)
 		cout << "ERROR: There should be atleast ONE number, uppercase, lowercase and special character: ";
 		flag = 0;
 	}
-	else
+	else if (num == 2 and !flag)
 	{
 		flag = 1;
 	}

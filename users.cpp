@@ -20,16 +20,17 @@ Users::Users(const char* name, const char* password)
 	draws = 0;
 }
 
-Users::Users(const char* name, const char* password, int w, int l, int d, int id)
+Users::Users(const char* name, const char* password, int w, int l, int d, int idNumber)
 {
 	setName(name);
 	setPassword(password);
 	win = w;
 	loss = l;
 	draws = d;
+	id = idNumber;
 }
 
-Users::Users() :username(nullptr), pass(nullptr), win(0), loss(0), draws(0)
+Users::Users() :username(nullptr), pass(nullptr), win(0), loss(0), draws(0), id(0)
 {
 }
 
@@ -37,6 +38,7 @@ void Users::setName(const char* name)
 {
 	if (name)
 	{
+		delete[] username;
 		username = new char[strlen(name) + 1];
 		strcpy(username, name);
 	}
@@ -45,6 +47,14 @@ void Users::setName(const char* name)
 char* Users::name() const
 {
 	return username;
+}
+
+void Users::setID(int num)
+{
+	if (num)
+	{
+		id = num;
+	}
 }
 
 char* Users::password() const
@@ -68,6 +78,57 @@ void Users::updateScore(char winloss)
 	}
 }
 
+int Users::score(char winloss)const
+{
+	int result;
+	if (winloss == 'w')
+	{
+		result = win;
+	}
+	else if (winloss == 'l')
+	{
+		result = loss;
+	}
+	else if (winloss == 'd')
+	{
+		result = draws;
+	}
+	else
+	{
+		result = id;
+	}
+	return result;
+}
+
+void Users::updateDatabase(Connection* conn)
+{
+	Statement* stmt = conn->createStatement();
+	stmt->setSQL("UPDATE tictactoe SET username = (:1), pass = (:2), win  = (:3), loss = (:4), draw = (:5) WHERE userid = (:6)");
+	stmt->setString(1, username);
+	stmt->setString(2, pass);
+	stmt->setInt(3, win);
+	stmt->setInt(4, loss);
+	stmt->setInt(5, draws);
+	stmt->setInt(6, score('i'));
+	stmt->executeQuery();
+	conn->commit();
+}
+
+void Users::displayScore()const
+{
+	cout.setf(ios::left);
+	cout << setw(10) << "Username" << setw(6) << "Wins" << setw(6) << "Loses" << setw(6) << "Draws" << endl;
+	cout.unsetf(ios::left);
+	cout.setf(ios::right);
+	cout << setw(10) << setfill('=') << "= " << setw(6) << setfill('=') << "= " << setw(6) << setfill('=') << "= " << setw(6) << setfill('=') << "= " << endl;
+	cout.unsetf(ios::right);
+	cout.setf(ios::left);
+
+	cout << setfill(' ') << setw(10) << name() << setw(6) << score('w') << setw(6) << score('l') << setw(6) << score('d') << endl;
+	cout.unsetf(ios::left);
+	cout << endl << endl;
+}
+
 
 void Users::setPassword(const char* password)
 {
@@ -88,6 +149,7 @@ Users& Users::operator=(const Users* usr)
 {
 	if (this != usr)
 	{
+		id = usr->id;
 		delete[] username;
 		setName(usr->username);
 		delete[] pass;
@@ -101,20 +163,42 @@ Users& Users::operator=(const Users* usr)
 	}
 	return *this;
 }
+Users& Users::operator=(const Users& usr)
+{
+	if (this != &usr)
+	{
+		id = usr.id;
+		delete[] username;
+		setName(usr.username);
+		delete[] pass;
+		setPassword(usr.pass);
+		if (usr.win)
+		{
+			win = usr.win;
+			loss = usr.loss;
+			draws = usr.draws;
+		}
+	}
+	return *this;
+}
 Game::Game(Connection* conn)
 {
+	int i = 0;
 	Statement* stmt = conn->createStatement();
 	ResultSet* rs = stmt->executeQuery("SELECT COUNT(*) FROM tictactoe");
 
 	while (rs->next())
 	{
-		users = new Users[rs->getInt(1)];
+		users[i++] = new Users();
 		totalUser = rs->getInt(1);
 	}
 }
 Game::~Game()
 {
-	delete[] users;
+	for (int i = 0; i < totalUser; i++)
+	{
+		delete users[i];
+	}
 	//can be loop where each user is delted
 }
 void Game::loadData(Connection* conn)
@@ -145,17 +229,15 @@ void Game::registerUser(Connection* conn)
 			cout << "ERROR: A user with the same username exists. Enter a different username." << endl;
 		}
 	} while (flag != -1);
-
 	pass = getString("Password", 4, 10, cin);
 
 	val = getChar("Are you sure you want to register? (Y/N): ", "YN", cin);
 	if (val == 'Y')
 	{
 		Statement* stmt = conn->createStatement();
-		stmt->setSQL("INSERT INTO tictactoe VALUES ((:1), (:2), (:3),0,0,0)");
-		stmt->setInt(1, ++totalUser);
-		stmt->setString(2, username);
-		stmt->setString(3, pass);
+		stmt->setSQL("INSERT INTO tictactoe (username, pass,win,loss,draw) VALUES ((:1), (:2),0,0,0)");
+		stmt->setString(1, username);
+		stmt->setString(2, pass);
 		stmt->executeQuery();
 		conn->commit();
 
@@ -169,7 +251,7 @@ void Game::registerUser(Connection* conn)
 int Game::matchingNames(const char* name)
 {
 	int i, index = -1;
-	for (i = 0; i < totalUser && strcmp(users[i].name(), name); i++);
+	for (i = 0; i < totalUser && strcmp(users[i]->name(), name); i++);
 
 	if (i != totalUser)
 	{
@@ -181,7 +263,7 @@ int Game::matchingNames(const char* name)
 int Game::matchingPasswords(const char* password)
 {
 	int i, index = -1;
-	for (i = 0; i < totalUser && strcmp(users[i].password(), password); i++);
+	for (i = 0; i < totalUser && strcmp(users[i]->password(), password); i++);
 
 	return i == totalUser ? -1 : i;
 }
@@ -192,7 +274,10 @@ Game& Game::operator=(const Game* src)
 {
 	if (this != src)
 	{
-		delete[] users;
+		for (int i = 0; i < totalUser; i++)
+		{
+			delete users[i];
+		}
 		for (int i = 0; i < src->totalUser; i++)
 		{
 			users[i] = src->users[i];
@@ -201,12 +286,12 @@ Game& Game::operator=(const Game* src)
 	}
 	return *this;
 }
-void Game::login()
+int Game::login(Connection* conn)
 {
 	string name, pass;
 	int flag = 0;
 	char valid = '\0';
-	int index = 0;
+	int index = -1;
 	do
 	{
 		cout << "Username: ";
@@ -216,12 +301,9 @@ void Game::login()
 		cout << endl;
 		index = matchingNames(name.c_str());
 
-		if (index == matchingPasswords(pass.c_str()))
+		if (index != -1 && strcmp(users[index]->password(), pass.c_str()) == 0)
 		{
-			cout << "SUCCESS!" << endl;
 			flag = 1;
-			//call the tic tac toe menu
-			tttMenu(index);
 		}
 		else
 		{
@@ -230,17 +312,19 @@ void Game::login()
 			if (valid == 'N')
 			{
 				flag = 1;
+				index = -1;
 			}
 
 		}
 	} while (!flag);
+	return index;
 }
 
 void Game::scoreboard(Connection* conn)
 {
 	Statement* stmt = conn->createStatement();
-	ResultSet* rs = stmt->executeQuery("SELECT username, win, draw FROM tictactoe ORDER BY win, username FETCH NEXT 10 ROWS ONLY");
-	
+	ResultSet* rs = stmt->executeQuery("SELECT username, win, draw FROM tictactoe ORDER BY win DESC, username ASC FETCH NEXT 10 ROWS ONLY");
+
 	cout.setf(ios::left);
 	cout << setw(6) << "Rank" << setw(15) << "Username" << setw(6) << "Wins" << setw(7) << "Draws" << endl;
 	cout.unsetf(ios::left);
@@ -248,53 +332,69 @@ void Game::scoreboard(Connection* conn)
 	cout << setw(6) << setfill('=') << "= " << setw(15) << setfill('=') << "= " << setw(6) << setfill('=') << "= " << setw(7) << setfill('=') << "= " << endl;
 	cout.unsetf(ios::right);
 
+	cout << setfill(' ');
 	cout.setf(ios::left);
 	for (int i = 0; rs->next(); i++)
 	{
 		cout << setfill(' ') << setw(6) << i + 1 << setw(15) << rs->getString(1) << setw(6) << rs->getInt(2) << setw(7) << rs->getInt(3) << endl;
 	}
+	cout.unsetf(ios::left);
 	cout << endl;
 }
 
-void Game::tttMenu(int index)
+char* Game::tttMenu(int index)
 {
 	int selection;
 	char userChar = '\0';
 	do
 	{
-		cout << "Welcome " << users[index].name() << "!" << endl;
+		cout << "Welcome " << users[index]->name() << "!" << endl;
 		cout << "================" << endl;
 		cout << "1) Play" << endl;
 		cout << "2) Stats" << endl;
-		cout << "3) Delete Account" << endl;
+		cout << "3) Update Account" << endl;
+		cout << "4) Delete Account" << endl;
 		cout << "0) Log Out" << endl;
-		selection = getInt("Enter Menu option: ", 0, 3, "Enter within the range of menu options");
-
+		selection = getInt("Enter Menu option: ", 0, 4, "Enter within the range of menu options");
+		cout << endl;
 		switch (selection)
 		{
 		case 1:
 		{
 			userChar = getChar("Select a character (X/O): ", "XO", cin);
-			wholeGame(userChar);
+			wholeGame(userChar, index);
 		}
 		break;
 		case 2:
 		{
-
+			users[index]->displayScore();
 		}
 		break;
+		case 3:
+		{
+			updateMenu(index);
+		}
+		break;
+		case 4:
+		{
+			userChar = '\0';
+			users[index]->setPassword(&userChar);
+			selection = 0;
+		}
 		break;
 		default:
 			break;
 		}
 	} while (selection);
+	return users[index]->password();
 }
 
 void Game::display(char userChar)
 {
 	userChar == 'X' ? cout << "User: X" : cout << "User: O";
-	cout << '\t\t';
-	userChar == 'X' ? cout << "Computer: O" : cout << "Computer: X" << endl << endl;
+	cout << "\t\t";
+	userChar == 'X' ? cout << "Computer: O" : cout << "Computer: X";
+	cout << endl << endl;
 	for (int i = 1, j = 0; i <= 3; i++, j += 3)
 	{
 		//cout << "_" << j << "_|_" << j + 1 << "_|_" << j + 2 << "_|" << endl;
@@ -313,7 +413,7 @@ void Game::display(char userChar)
 			cout << j + 1;
 		}
 		cout << "_|_";
-		
+
 
 		if (tictactoe[j + 1] == 1)
 		{
@@ -342,12 +442,12 @@ void Game::display(char userChar)
 			cout << j + 3;
 		}
 		cout << "_|" << endl;
-		
+
 	}
 	cout << endl << endl;
 }
 
-void Game::wholeGame(char userChar)
+void Game::wholeGame(char userChar, int index)
 {
 	int turns = 0, win;
 	do
@@ -367,9 +467,13 @@ void Game::wholeGame(char userChar)
 		turns++;
 		win = winner();
 
-	} while (!win && turns <= 9);
+	} while (!win && turns < 9);
 
 	display(userChar);
+	for (int i = 0; i < 9; i++)
+	{
+		tictactoe[i] = 0;
+	}
 	cout << "WINNER: ";
 	//win == 1 ? cout << "You\t" : cout << "Computer\t";
 	if (win)
@@ -377,6 +481,7 @@ void Game::wholeGame(char userChar)
 		if (win == 1)
 		{
 			cout << "You\t";
+			users[index]->updateScore('w');
 		}
 		else if (win == 2)
 		{
@@ -391,13 +496,15 @@ void Game::wholeGame(char userChar)
 		else if (win == 2)
 		{
 			cout << "You";
+			users[index]->updateScore('l');
 		}
 	}
 	else
 	{
-		cout << "This game is a draw" << endl;
+		cout << "This game is a draw";
+		users[index]->updateScore('d');
 	}
-	cout << endl;
+	cout << endl << endl;
 	//updatescore
 }
 
@@ -472,4 +579,81 @@ int Game::winner()
 		winner = tictactoe[6];
 	}
 	return winner;
+}
+
+void Game::updateDatabase(Connection* conn, int index)
+{
+	users[index]->updateDatabase(conn);
+}
+
+void Game::updateMenu(int index)
+{
+	int selection;
+	char* str, val;
+	int flag = 0;
+	do
+	{
+		cout << "Update Menu" << endl;
+		cout << "============" << endl;
+		cout << "1) Change Username" << endl;
+		cout << "2) Change Password" << endl;
+		cout << "0) Exit" << endl;
+
+		selection = getInt("Enter Menu option: ", 0, 2, "Enter within the range of menu options");
+		cout << endl;
+		switch (selection)
+		{
+		case 1:
+		{
+			do
+			{
+				str = getString("Username", 1, 30, cin);
+				flag = matchingNames(str);
+				if (flag != -1)
+				{
+					cout << "ERROR: A user with the same username exists. Enter a different username." << endl;
+					val = getChar("Do you want to try again? (Y/N): ", "YN", cin);
+					if (val == 'N')
+					{
+						flag = 0;
+					}
+				}
+				else
+				{
+					val = getChar("Are you sure you want to update your username? (Y/N): ", "YN", cin);
+					if (val == 'Y')
+					{
+						users[index]->setName(str);
+					}
+				}
+			} while (flag != -1);
+
+		}
+		break;
+		case 2:
+		{
+			str = getString("Password", 4, 10, cin);
+			val = getChar("Are you sure you want to update your password? (Y/N): ", "YN", cin);
+			if (val == 'Y')
+			{
+				users[index]->setPassword(str);
+			}
+		}
+		break;
+		default:
+			break;
+		}
+	} while (selection);
+}
+
+void Game::deleteUser(Connection* conn, int index)
+{
+	Statement* stmt = conn->createStatement();
+	stmt->setSQL("DELETE FROM tictactoe WHERE userid = (:1)");
+	stmt->setInt(1, users[index]->score('i'));
+	stmt->executeQuery();
+	conn->commit();
+
+	removeDynamicElement(users, index, totalUser);
+
 }

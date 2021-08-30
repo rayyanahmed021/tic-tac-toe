@@ -22,7 +22,9 @@ using namespace std;
 
 void startMenu(Connection* conn, Game& game)
 {
-	int selection;
+	int selection, index = 0;
+	char* tempStr = nullptr;
+
 	do
 	{
 		cout << "Login Menu" << endl;
@@ -43,7 +45,19 @@ void startMenu(Connection* conn, Game& game)
 		break;
 		case 2:
 		{
-			game.login();
+			index = game.login(conn);
+			if (index != -1)
+			{
+				tempStr = game.tttMenu(index);
+				if (tempStr[0] == '\0')
+				{
+					game.deleteUser(conn, index);
+				}
+				else
+				{
+					game.updateDatabase(conn, index);
+				}
+			}
 		}
 		break;
 		case 3:
