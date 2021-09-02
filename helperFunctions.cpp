@@ -1,3 +1,12 @@
+/*
+===============================
+Author: Rayyan Ahmed
+Date: 28/8/2021
+Module: helperFunctions
+Project: tic-tac-toe
+===============================
+*/
+
 #define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
 #include <string.h>
@@ -59,6 +68,7 @@ char getChar(const char* prompt, const char* validChar, istream& is)
 	{
 		is.get(chr);
 		cout << endl;
+
 		if (is.get() != '\n')
 		{
 			is.ignore(1000, '\n');
@@ -76,97 +86,6 @@ char getChar(const char* prompt, const char* validChar, istream& is)
 
 	return chr;
 }
-//char* getUsername(const char* prompt, istream& is)
-//{
-//	string str;
-//	int flag = 0, i;
-//	char* ptr = nullptr;
-//	const int maxname = MAX_NAME;
-//	if (prompt)
-//	{
-//		cout << prompt;
-//	}
-//	do
-//	{
-//		getline(is, str, '\n');
-//		if (str.length() > maxname)
-//		{
-//			cout << "ERROR: username can't be larger than " << maxname << ": ";
-//		}
-//		else
-//		{
-//			for (i = 0, flag = 1; flag && i < str.length(); i++)
-//			{
-//				if (!((str[i] >= 48 && str[i] <= 57) || (str[i] >= 65 && str[i] <= 90) || (str[i] >= 97 && str[i] <= 122)))
-//				{
-//					flag = 0;
-//					cout << "ERROR: only numbers and alphabets are allowed: ";
-//				}
-//			}
-//		}
-//	} while (!flag);
-//	ptr = new char[str.length() + 1];
-//	strcpy(ptr, str.c_str());
-//	return ptr;
-//}
-
-//char* getPass(const char* prompt, std::istream& is)
-//{
-//	string str;
-//	int flag = 0, i;
-//	char* ptr = nullptr;
-//	const int maxPass = MAX_PASS;
-//	const int minPass = MIN_PASS;
-//	int num, lower, upper, special, sum;
-//	num = lower = upper = special = sum = 0;
-//
-//	if (prompt)
-//	{
-//		cout << prompt;
-//	}
-//	do
-//	{
-//		getline(is, str, '\n');
-//		if (str.length() > maxPass || str.length() < minPass)
-//		{
-//			cout << "ERROR: Password between " << minPass << " and " << maxPass << " characters: ";
-//		}
-//		else
-//		{
-//			for (i = 0; (num + upper + lower + special) != 4 && i < str.length(); i++)
-//			{
-//				if (str[i] >= 48 && str[i] <= 57)
-//				{
-//					num = 1;
-//				}
-//				else if (str[i] >= 65 && str[i] <= 90)
-//				{
-//					upper = 1;
-//				}
-//				else if (str[i] >= 97 && str[i] <= 122)
-//				{
-//					lower = 1;
-//				}
-//				else
-//				{
-//					special = 1;
-//				}
-//			}
-//			sum = num + upper + lower + special;
-//			if (sum < 4)
-//			{
-//				cout << "ERROR: There should be atleast ONE number, uppercase, lowercase and special character: ";
-//			}
-//			else
-//			{
-//				flag = 1;
-//			}
-//		}
-//	} while (!flag);
-//	ptr = new char[str.length() + 1];
-//	strcpy(ptr, str.c_str());
-//	return ptr;
-//}
 
 char* getString(const char* prompt, int min, int max, std::istream& is)
 {
@@ -177,18 +96,19 @@ char* getString(const char* prompt, int min, int max, std::istream& is)
 	if (prompt)
 	{
 		cout << prompt << ": ";
-		
 	}
 	do
 	{
 		getline(is, str, '\n');
 		if (str.length() > max || str.length() < min)
 		{
-			cout << "ERROR: " << prompt << " must be between " << min << " and " << max << " characters: ";
+			cout << "ERROR: " << prompt << " must be between " 
+				<< min << " and " << max << " characters: ";
 		}
 		else
 		{
-			strcmp(prompt, "Username") == 0 ? flag = asciiValidation(1, str.c_str()) : flag = asciiValidation(2, str.c_str());
+			strcmp(prompt, "Username") == 0 ? flag = asciiValidation(1, str.c_str()) :
+				flag = asciiValidation(2, str.c_str());
 		}
 	} while (!flag);
 
@@ -208,7 +128,9 @@ int asciiValidation(int num, const char* str)
 		//1 for username
 		if (num == 1)
 		{
-			if (!((str[i] >= 48 && str[i] <= 57) || (str[i] >= 65 && str[i] <= 90) || (str[i] >= 97 && str[i] <= 122)))
+			if (!((str[i] >= 48 && str[i] <= 57) ||
+				(str[i] >= 65 && str[i] <= 90) ||
+				(str[i] >= 97 && str[i] <= 122)))
 			{
 				flag = 0;
 				cout << "ERROR: only numbers and alphabets are allowed: ";
@@ -237,7 +159,8 @@ int asciiValidation(int num, const char* str)
 	}
 	if (num == 2 && flag)
 	{
-		cout << "ERROR: There should be atleast ONE number, uppercase, lowercase and special character: ";
+		cout << "ERROR: There should be atleast ONE";
+		cout << "number, uppercase, lowercase and special character: ";
 		flag = 0;
 	}
 	else if (num == 2 and !flag)

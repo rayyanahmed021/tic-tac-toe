@@ -1,3 +1,11 @@
+/*
+===============================
+Author: Rayyan Ahmed
+Date: 28/8/2021
+Module: helperFunctions
+Project: tic-tac-toe
+===============================
+*/
 #ifndef HELPER_FUNCTIONS_H
 #define HELPER_FUNCTIONS_H
 
@@ -10,9 +18,6 @@
 
 int getInt(const char* prompt, int min, int max, const char* errorMsg);
 char getChar(const char* prompt, const char* validChar, std::istream& = std::cin);
-//char* getUsername(const char* prompt, std::istream & = std::cin);
-//char* getPass(const char* prompt, std::istream & = std::cin);
-
 char* getString(const char* prompt, int min, int max, std::istream& is = std::cin);
 int asciiValidation(int num, const char* str);
 
