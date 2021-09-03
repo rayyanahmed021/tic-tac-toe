@@ -27,26 +27,25 @@ public:
 	Game(Connection* conn);
 	~Game();
 
-	void loadData(Connection* conn);
-	void addUser(Users* user);
-	void registerUser(Connection* conn);
 
 	//queries
 	int matchingNames(const char* name)const;
 	int matchingPasswords(const char* password)const;
-	int login(Connection* conn)const;
-	void scoreboard(Connection* conn)const;
+	int login()const;
+	void scoreboard()const;
 	void display(char userChar)const;
 	int winner()const;
-	void updateDatabase(Connection* conn, int index)const;
+	void updateDatabase(Connection* conn)const;
 	
 	
 	//modifier
+	void loadData(Connection* conn);
+	void registerUser(Connection* conn);
+	void addUser(Users* user);
 	char* tttMenu(int index);
 	void wholeGame(char userChar, int index);
 	int turn(int playerNumber);
 	void updateMenu(int index);
-	void deleteUser(Connection* conn, int index);
 };
 
 void startMenu(Connection* conn, Game& game);

@@ -46,21 +46,18 @@ void startMenu(Connection* conn, Game& game)
 			index = game.login(conn);
 			if (index != -1)
 			{
-				tempStr = game.tttMenu(index);
-				if (tempStr[0] == '\0')
-				{
-					game.deleteUser(conn, index);
-				}
-				else
-				{
-					game.updateDatabase(conn, index);
-				}
+				game.tttMenu(index);
 			}
 		}
 		break;
 		case 3:
 		{
 			game.scoreboard(conn);
+		}
+		break;
+		case 0:
+		{
+			game.updateDatabase(conn);
 		}
 		break;
 		default:
@@ -99,11 +96,11 @@ void Game::loadData(Connection* conn)
 	while (rs->next())
 	{
 		users[i] = new Users(rs->getString(2).c_str(),
-							rs->getString(3).c_str(),
-							rs->getInt(4),
-							rs->getInt(5),
-							rs->getInt(6),
-							rs->getInt(1));
+			rs->getString(3).c_str(),
+			rs->getInt(4),
+			rs->getInt(5),
+			rs->getInt(6),
+			i + 1);
 		i++;
 	}
 }
@@ -143,20 +140,7 @@ void Game::registerUser(Connection* conn)
 	val = getChar("Are you sure you want to register? (Y/N): ", "YN", cin);
 	if (val == 'Y')
 	{
-		Statement* stmt = conn->createStatement();
-		stmt->setSQL("INSERT INTO tictactoe (username, pass,win,loss,draw) VALUES ((:1), (:2),0,0,0)");
-		stmt->setString(1, username);
-		stmt->setString(2, pass);
-		stmt->executeQuery();
-		stmt->setSQL("SELECT userid FROM tictactoe WHERE username = (:1)");
-		stmt->setString(1, username);
-		ResultSet* rs = stmt->executeQuery();
-		conn->commit();
-
-		while (rs->next())
-		{
-			addUser(new Users(rs->getInt(1), username, pass));
-		}
+		addUser(new Users(totalUser + 1, username, pass));
 	}
 }
 
@@ -180,7 +164,7 @@ int Game::matchingPasswords(const char* password)const
 	return i == totalUser ? -1 : i;
 }
 
-int Game::login(Connection* conn)const
+int Game::login()const
 {
 	string name, pass;
 	int flag = 0;
@@ -214,34 +198,31 @@ int Game::login(Connection* conn)const
 	return index;
 }
 
-void Game::scoreboard(Connection* conn)const
+void Game::scoreboard()const
 {
-	Statement* stmt = conn->createStatement();
-	ResultSet* rs = stmt->executeQuery("SELECT username, win, draw FROM tictactoe ORDER BY win DESC,username ASC FETCH NEXT 10 ROWS ONLY");
-
+	selectionSort(users, totalUser);
 	cout.setf(ios::left);
 	cout << setw(6) << "Rank" << setw(15) << "Username"
-		<< setw(6) << "Wins" << setw(7) << "Draws" << endl;
+		<< setw(6) << "Wins" << setw(11) << "Total Games" << endl;
 	cout.unsetf(ios::left);
 	cout.setf(ios::right);
 	cout << setw(6) << setfill('=') << "= "
 		<< setw(15) << setfill('=') << "= "
 		<< setw(6) << setfill('=') << "= "
-		<< setw(7) << setfill('=') << "= "
+		<< setw(11) << setfill('=') << "= "
 		<< endl;
 	cout.unsetf(ios::right);
 
 	cout << setfill(' ');
 	cout.setf(ios::left);
-	for (int i = 0; rs->next(); i++)
+	for (int i = 0; i < totalUser; i++)
 	{
 		cout << setfill(' ') << setw(6) << i + 1
-			<< setw(15) << rs->getString(1)
-			<< setw(6) << rs->getInt(2)
-			<< setw(7) << rs->getInt(3)
+			<< setw(15) << users[i]->name()
+			<< setw(6) << users[i]->score('w')
+			<< setw(7) << users[i]->score('l') + users[i]->score('w') + users[i]->score('d')
 			<< endl;
 	}
-	cout.unsetf(ios::left);
 	cout << endl;
 }
 
@@ -280,8 +261,7 @@ char* Game::tttMenu(int index)
 		break;
 		case 4:
 		{
-			userChar = '\0';
-			users[index]->setPassword(&userChar);
+			removeDynamicElement(users, index, totalUser);
 			selection = 0;
 		}
 		break;
@@ -483,9 +463,14 @@ int Game::winner()const
 	return winner;
 }
 
-void Game::updateDatabase(Connection* conn, int index)const
+void Game::updateDatabase(Connection* conn)const
 {
-	users[index]->updateDatabase(conn);
+	Statement* stmt = conn->createStatement();
+	stmt->executeQuery("DELETE FROM tictactoe");
+	for (int i = 0; i < totalUser; i++)
+	{
+		users[i]->updateDatabase(conn);
+	}
 }
 
 void Game::updateMenu(int index)
@@ -549,18 +534,6 @@ void Game::updateMenu(int index)
 			break;
 		}
 	} while (selection);
-}
-
-void Game::deleteUser(Connection* conn, int index)
-{
-	Statement* stmt = conn->createStatement();
-	stmt->setSQL("DELETE FROM tictactoe WHERE userid = (:1)");
-	stmt->setInt(1, users[index]->score('i'));
-	stmt->executeQuery();
-	conn->commit();
-
-	removeDynamicElement(users, index, totalUser);
-
 }
 
 

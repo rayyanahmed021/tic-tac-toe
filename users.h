@@ -18,12 +18,13 @@ using oracle::occi::Connection;
 using namespace oracle::occi;
 
 template <typename type>
-void removeDynamicElement(type* array, int index, int& size)
+void removeDynamicElement(type* array[], int index, int& size)
 {
 	delete array[index];
-	for (int j = index; j < size; j++)
+	for (int j = index; j < size - 1; j++)
 	{
 		array[j] = array[j + 1];
+		array[j]->setID(j + 1);
 	}
 	size--;
 }
@@ -47,6 +48,7 @@ public:
 	void setPassword(const char* password);
 	void setName(const char* name);
 	void updateScore(char winloss);
+	void setID(int idNum);
 	
 	//queries
 	char* name()const;

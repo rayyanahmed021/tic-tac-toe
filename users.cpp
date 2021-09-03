@@ -84,6 +84,14 @@ void Users::updateScore(char winloss)
 	}
 }
 
+void Users::setID(int idNum)
+{
+	if (idNum)
+	{
+		id = idNum;
+	}
+}
+
 int Users::score(char winloss)const
 {
 	int result;
@@ -109,13 +117,13 @@ int Users::score(char winloss)const
 void Users::updateDatabase(Connection* conn)const
 {
 	Statement* stmt = conn->createStatement();
-	stmt->setSQL("UPDATE tictactoe SET username = (:1), pass = (:2), win  = (:3), loss = (:4), draw = (:5) WHERE userid = (:6)");
-	stmt->setString(1, username);
-	stmt->setString(2, pass);
-	stmt->setInt(3, win);
-	stmt->setInt(4, loss);
-	stmt->setInt(5, draws);
-	stmt->setInt(6, score('i'));
+	stmt->setSQL("INSERT INTO tictactoe VALUES ((:1), (:2), (:3), (:4), (:5), (:6))");
+	stmt->setInt(1, id);
+	stmt->setString(2, username);
+	stmt->setString(3, pass);
+	stmt->setInt(4, win);
+	stmt->setInt(5, loss);
+	stmt->setInt(6, draws);
 	stmt->executeQuery();
 	conn->commit();
 }

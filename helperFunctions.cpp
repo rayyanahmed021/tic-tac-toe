@@ -12,6 +12,8 @@ Project: tic-tac-toe
 #include <string.h>
 #include <string>
 #include "helperFunctions.h"
+#include "game.h"
+#include "users.h"
 
 using namespace std;
 
@@ -168,4 +170,30 @@ int asciiValidation(int num, const char* str)
 		flag = 1;
 	}
 	return flag;
+}
+void selectionSort(Users* array[], int arrayLength)
+{
+	int iterIdx, tstElemIdx, curMinIdx;
+	Users* tempVal;
+
+	for (iterIdx = 0; iterIdx < arrayLength; iterIdx++)
+	{
+		curMinIdx = iterIdx;
+
+		for (tstElemIdx = iterIdx + 1; tstElemIdx < arrayLength; tstElemIdx++)
+		{
+			// check if the test element is < our current marked lowest value
+			if (array[tstElemIdx]->score('w') > array[curMinIdx]->score('w'))
+			{
+				curMinIdx = tstElemIdx; // mark the test element index as the next lowest
+			}
+		}
+		// Swap needs to be done!
+		if (curMinIdx != iterIdx)
+		{
+			tempVal = array[iterIdx];
+			array[iterIdx] = array[curMinIdx];
+			array[curMinIdx] = tempVal;
+		}
+	}
 }
