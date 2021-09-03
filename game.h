@@ -44,7 +44,8 @@ public:
 	void addUser(Users* user);
 	char* tttMenu(int index);
 	void wholeGame(char userChar, int index);
-	int turn(int playerNumber);
+	int userTurn();
+	int compTurn();
 	void updateMenu(int index);
 };
 

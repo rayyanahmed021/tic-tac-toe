@@ -43,7 +43,7 @@ void startMenu(Connection* conn, Game& game)
 		break;
 		case 2:
 		{
-			index = game.login(conn);
+			index = game.login();
 			if (index != -1)
 			{
 				game.tttMenu(index);
@@ -52,7 +52,7 @@ void startMenu(Connection* conn, Game& game)
 		break;
 		case 3:
 		{
-			game.scoreboard(conn);
+			game.scoreboard();
 		}
 		break;
 		case 0:
@@ -338,12 +338,12 @@ void Game::wholeGame(char userChar, int index)
 		if (turns % 2 == 0)
 		{
 			//take user input
-			turn(1);
+			userTurn();
 		}
 		else
 		{
 			//call computer turn
-			turn(2);
+			compTurn();
 		}
 		turns++;
 		win = winner();
@@ -387,37 +387,114 @@ void Game::wholeGame(char userChar, int index)
 	cout << endl << endl;
 }
 
-int Game::turn(int playerNumber)
+int Game::userTurn()
 {
 	int userTurn = 0, flag = 0;
 	do
 	{
 		//for user
-		if (playerNumber == 1)
-		{
-			userTurn = getInt("Select a number: ", 1, 9,
-				"Choose between 1 and 9");
+		userTurn = getInt("Select a number: ", 1, 9,
+			"Choose between 1 and 9");
 
-			if (tictactoe[userTurn - 1] == 0)
+		if (tictactoe[userTurn - 1] == 0)
+		{
+			tictactoe[userTurn - 1] = 1;
+			flag = 1;
+		}
+		else
+		{
+			cerr << "ERROR: Select empty boxes. Try again." << endl;
+		}
+	} while (!flag);
+	return 0;
+}
+
+int Game::compTurn()
+{
+	int turn = 0, flag = 1;
+	bool strategic = false;
+	do
+	{
+		if ((tictactoe[0] == 1 && tictactoe[1] == 1 && !tictactoe[2])
+			|| (tictactoe[1] == 1 && tictactoe[2] == 1 && !tictactoe[0])
+			|| (tictactoe[0] == 1 && tictactoe[2] == 1 && !tictactoe[1]))
+		{
+			if (!tictactoe[0])tictactoe[0] = 2;
+			else if (!tictactoe[1])tictactoe[1] = 2;
+			else if (!tictactoe[2])	tictactoe[2] = 2;
+		}
+		else if ((tictactoe[3] == 1 && tictactoe[4] == 1 && !tictactoe[5])
+			|| (tictactoe[4] == 1 && tictactoe[5] == 1 && !tictactoe[3])
+			|| (tictactoe[3] == 1 && tictactoe[5] == 1 && !tictactoe[4]))
+		{
+			if (!tictactoe[3]) tictactoe[3] = 2;
+			else if (!tictactoe[4])	tictactoe[4] = 2;
+			else if (!tictactoe[5])tictactoe[5] = 2;
+		}
+		else if ((tictactoe[6] == 1 && tictactoe[7] == 1 && !tictactoe[8])
+			|| (tictactoe[7] == 1 && tictactoe[8] == 1 && !tictactoe[6])
+			|| (tictactoe[6] == 1 && tictactoe[8] == 1 && !tictactoe[7]))
+		{
+			if (!tictactoe[6])tictactoe[6] = 2;
+			else if (!tictactoe[7])tictactoe[7] = 2;
+			else if (!tictactoe[8])	tictactoe[8] = 2;
+		}
+		//vertical columns
+		else if ((tictactoe[0] == 1 && tictactoe[3] == 1 && !tictactoe[6])
+			|| (tictactoe[3] == 1 && tictactoe[6] == 1 && !tictactoe[0])
+			|| (tictactoe[0] == 1 && tictactoe[6] == 1 && !tictactoe[3]))
+		{
+			if (!tictactoe[0])tictactoe[0] = 2;
+			else if (!tictactoe[3])tictactoe[3] = 2;
+			else if (!tictactoe[6])	tictactoe[6] = 2;
+		}
+		else if ((tictactoe[1] == 1 && tictactoe[4] == 1 && !tictactoe[7])
+			|| (tictactoe[4] == 1 && tictactoe[7] == 1 && !tictactoe[1])
+			|| (tictactoe[1] == 1 && tictactoe[7] == 1 && !tictactoe[4]))
+		{
+			if (!tictactoe[1])tictactoe[1] = 2;
+			else if (!tictactoe[4])tictactoe[4] = 2;
+			else if (!tictactoe[7])	tictactoe[7] = 2;
+		}
+		else if ((tictactoe[2] == 1 && tictactoe[5] == 1 && !tictactoe[8])
+			|| (tictactoe[5] == 1 && tictactoe[8] == 1 && !tictactoe[2])
+			|| (tictactoe[2] == 1 && tictactoe[8] == 1 && !tictactoe[5]))
+		{
+			if (!tictactoe[2])tictactoe[2] = 2;
+			else if (!tictactoe[5])tictactoe[5] = 2;
+			else if (!tictactoe[8])	tictactoe[8] = 2;
+		}
+		//diagnol
+		else if ((tictactoe[6] == 1 && tictactoe[4] == 1 && !tictactoe[2])
+			|| (tictactoe[6] == 1 && tictactoe[2] == 1 && !tictactoe[4])
+			|| (tictactoe[4] == 1 && tictactoe[2] == 1 && !tictactoe[6]))
+		{
+			if (!tictactoe[6])tictactoe[6] = 2;
+			else if (!tictactoe[2])tictactoe[2] = 2;
+			else if (!tictactoe[4])	tictactoe[4] = 2;
+		}
+		else if ((tictactoe[0] == 1 && tictactoe[4] == 1 && !tictactoe[8])
+			|| (tictactoe[4] == 1 && tictactoe[8] == 1 && !tictactoe[0])
+			|| (tictactoe[0] == 1 && tictactoe[8] == 1 && !tictactoe[4]))
+		{
+			if (!tictactoe[0])tictactoe[0] = 2;
+			else if (!tictactoe[4])tictactoe[4] = 2;
+			else if (!tictactoe[8])	tictactoe[8] = 2;
+		}
+
+		else
+		{
+			srand(time(NULL));
+			turn = rand() % 9 + 1;
+
+			if (tictactoe[turn - 1] == 0)
 			{
-				tictactoe[userTurn - 1] = 1;
+				tictactoe[turn - 1] = 2;
 				flag = 1;
 			}
 			else
 			{
-				cerr << "ERROR: Select empty boxes. Try again." << endl;
-			}
-		}
-		//for computer
-		else
-		{
-			srand(time(NULL));
-			userTurn = rand() % 9 + 1;
-
-			if (tictactoe[userTurn - 1] == 0)
-			{
-				tictactoe[userTurn - 1] = 2;
-				flag = 1;
+				flag = 0;
 			}
 		}
 	} while (!flag);
